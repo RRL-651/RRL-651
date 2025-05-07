@@ -1,0 +1,54 @@
+// 定义PID参数结构体
+typedef struct {
+    float Kp;
+    float Ki;
+    float Kd;
+} PID_Parameters;
+
+// 定义增益调度参数表
+const PID_Parameters pid_table[] = {
+    {3.0, 0.2, 0.8},  // 大偏差（偏差 > 10）
+    {2.0, 0.1, 0.6},  // 中等偏差（5 < 偏差 <= 10）
+    {1.5, 0.05, 0.3}, // 小偏差（-5 < 偏差 <= 5）
+    {2.0, 0.1, 0.6},  // 中等偏差（-10 < 偏差 <= -5）
+    {3.0, 0.2, 0.8}   // 大偏差（偏差 <= -10）
+};
+
+// 增益调度函数：根据偏差选择PID参数
+void get_pid_parameters(float error, PID_Parameters *params) {
+    if (error > 10000) {
+        *params = pid_table[0];
+    } else if (error > 5000) {
+        *params = pid_table[1];
+    } else if (error > -5000) {
+        *params = pid_table[2];
+    } else if (error > -10000) {
+        *params = pid_table[3];
+    } else {
+        *params = pid_table[4];
+    }
+}
+
+s16 ADO_integral; // 积分项
+s16 ADO_prev_error; // 上一次的误差
+s16 ADO_error,proportional ;
+s8 ADO_output ;
+// PID控制函数
+float pid_control(s16 setpoint,s16 current_temp)  // setpoint - 目标  current_temp,-当前
+{
+     ADO_prev_error = setpoint - current_temp;
+
+    // 获取当前PID参数
+    PID_Parameters params;
+    get_pid_parameters(ADO_prev_error, &params);
+
+    ADO_integral += ADO_prev_error
+
+
+    // 计算控制信号
+     ADO_output = (params.Kp * ADO_prev_error) + (params.Ki * ADO_integral)  ; //+ params.Kd * (error - prev_error)
+
+if   (ADO_output >= 49){ADO_output = 49;}
+if   (ADO_output <=0){ADO_output = 0;}
+    return ADO_output;
+}
